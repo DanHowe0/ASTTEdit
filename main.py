@@ -15,12 +15,78 @@ class TimetableEditor:
         self.entries = {}
 
         self.create_ui()
+        self.show_warning()
+
+    def show_warning(self):
+        warning = tk.Toplevel(self.root)
+
+        warning.title("Important")
+        warning.geometry("500x350")
+
+        warning.transient(self.root)
+        warning.grab_set()
+
+        # Prevent the window being closed without acknowledging
+        warning.protocol(
+            "WM_DELETE_WINDOW",
+            warning.destroy
+        )
+
+        frame = ttk.Frame(warning, padding=25)
+        frame.pack(fill="both", expand=True)
+
+        ttk.Label(
+            frame,
+            text="⚠  Important",
+            font=("TkDefaultFont", 16, "bold")
+        ).pack(anchor="w", pady=(0, 20))
+
+        message = (
+            "This tool is currently provided without "
+            "timetable validation logic.\n\n"
+
+            "The editor will allow you to enter values "
+            "that may be invalid or incompatible with "
+            "the game.\n\n"
+
+            "Please ensure that you understand the "
+            "timetable format and check your timetable "
+            "carefully before using it in-game.\n\n"
+
+            "Incorrect values may result in an invalid "
+            "timetable.\n\n"
+
+            "This is not an official tool, and it may cause"
+            "issues with your game. Please report any issues"
+            "with custom timetables to me, so I can validate"
+            "and identify if the timetable editor is the cause"
+        )
+
+        ttk.Label(
+            frame,
+            text=message,
+            wraplength=440,
+            justify="left"
+        ).pack(
+            anchor="w",
+            fill="x"
+        )
+
+        ttk.Button(
+            frame,
+            text="I Understand",
+            command=warning.destroy
+        ).pack(
+            side="bottom",
+            pady=(20, 0)
+        )
+
+        # Centre the warning window
+        warning.update_idletasks()
+
+        warning.wait_window()
 
     def create_ui(self):
-
-        # -------------------------------------------------
-        # MENU BAR
-        # -------------------------------------------------
 
         menu_bar = tk.Menu(self.root)
 
@@ -77,10 +143,6 @@ class TimetableEditor:
             menu=menu_bar
         )
 
-        # -------------------------------------------------
-        # MAIN CONTAINER
-        # -------------------------------------------------
-
         main = ttk.Frame(self.root)
         main.pack(
             fill="both",
@@ -88,10 +150,6 @@ class TimetableEditor:
             padx=10,
             pady=10
         )
-
-        # -------------------------------------------------
-        # LEFT SIDE - ID LIST
-        # -------------------------------------------------
 
         left_frame = ttk.Frame(main)
         left_frame.pack(
@@ -144,10 +202,6 @@ class TimetableEditor:
             self.on_id_selected
         )
 
-        # -------------------------------------------------
-        # RIGHT SIDE - EDITOR
-        # -------------------------------------------------
-
         right_frame = ttk.Frame(main)
         right_frame.pack(
             side="left",
@@ -166,10 +220,6 @@ class TimetableEditor:
             anchor="w",
             pady=(0, 15)
         )
-
-        # -------------------------------------------------
-        # SCROLLABLE FORM
-        # -------------------------------------------------
 
         self.canvas = tk.Canvas(
             right_frame,
@@ -219,19 +269,11 @@ class TimetableEditor:
             self.on_canvas_configure
         )
 
-    # -----------------------------------------------------
-    # CANVAS RESIZE
-    # -----------------------------------------------------
-
     def on_canvas_configure(self, event):
         self.canvas.itemconfig(
             self.canvas_window,
             width=event.width
         )
-
-    # -----------------------------------------------------
-    # NEW TIMETABLE
-    # -----------------------------------------------------
 
     def new_timetable(self):
 
@@ -264,10 +306,6 @@ class TimetableEditor:
         )
 
         self.canvas.yview_moveto(0)
-
-    # -----------------------------------------------------
-    # LOAD JSON
-    # -----------------------------------------------------
 
     def load_json(self):
 
@@ -321,10 +359,6 @@ class TimetableEditor:
 
         self.populate_id_list()
 
-    # -----------------------------------------------------
-    # POPULATE LEFT LIST
-    # -----------------------------------------------------
-
     def populate_id_list(self):
 
         self.id_list.delete(
@@ -361,10 +395,6 @@ class TimetableEditor:
 
             self.entries.clear()
 
-    # -----------------------------------------------------
-    # ID SELECTED
-    # -----------------------------------------------------
-
     def on_id_selected(self, event=None):
 
         selection = self.id_list.curselection()
@@ -386,10 +416,6 @@ class TimetableEditor:
             self.data[index]
         )
 
-    # -----------------------------------------------------
-    # DISPLAY ENTRY
-    # -----------------------------------------------------
-
     def show_entry(self, entry):
 
         for widget in self.form_frame.winfo_children():
@@ -407,10 +433,6 @@ class TimetableEditor:
         )
 
         row = 0
-
-        # -------------------------------------------------
-        # ID
-        # -------------------------------------------------
 
         ttk.Label(
             self.form_frame,
@@ -447,10 +469,6 @@ class TimetableEditor:
 
         row += 1
 
-        # -------------------------------------------------
-        # DETERMINE DIRECTION AND ROUTE FROM PATH
-        # -------------------------------------------------
-
         path = str(
             entry.get(
                 "path",
@@ -463,9 +481,6 @@ class TimetableEditor:
         else:
             direction = "Down"
 
-        # DownBranch does not exist in the game.
-        # Therefore a Down path is always displayed as Main
-        # unless the destination tells us that it is a branch.
         if direction == "Down":
             if entry.get("destination") == "Goton":
                 route = "Branch"
@@ -476,10 +491,6 @@ class TimetableEditor:
                 route = "Branch"
             else:
                 route = "Main"
-
-        # -------------------------------------------------
-        # DIRECTION
-        # -------------------------------------------------
 
         ttk.Label(
             self.form_frame,
@@ -521,10 +532,6 @@ class TimetableEditor:
 
         row += 1
 
-        # -------------------------------------------------
-        # ROUTE
-        # -------------------------------------------------
-
         ttk.Label(
             self.form_frame,
             text="Route:"
@@ -563,38 +570,8 @@ class TimetableEditor:
             route_var
         )
 
-        row += 1
-
-        # -------------------------------------------------
-        # PATH
-        # -------------------------------------------------
-
-        ttk.Label(
-            self.form_frame,
-            text="Path:"
-        ).grid(
-            row=row,
-            column=0,
-            sticky="nw",
-            padx=(0, 15),
-            pady=6
-        )
 
         path_var = tk.StringVar()
-
-        path_widget = ttk.Entry(
-            self.form_frame,
-            textvariable=path_var,
-            state="readonly",
-            width=40
-        )
-
-        path_widget.grid(
-            row=row,
-            column=1,
-            sticky="ew",
-            pady=4
-        )
 
         self.entries["path"] = (
             "value",
@@ -602,10 +579,6 @@ class TimetableEditor:
         )
 
         row += 1
-
-        # -------------------------------------------------
-        # FROM INSTRUMENT
-        # -------------------------------------------------
 
         ttk.Label(
             self.form_frame,
@@ -641,10 +614,6 @@ class TimetableEditor:
 
         row += 1
 
-        # -------------------------------------------------
-        # DESTINATION
-        # -------------------------------------------------
-
         ttk.Label(
             self.form_frame,
             text="Destination:"
@@ -678,10 +647,6 @@ class TimetableEditor:
         )
 
         row += 1
-
-        # -------------------------------------------------
-        # ARRIVAL TIME
-        # -------------------------------------------------
 
         ttk.Label(
             self.form_frame,
@@ -723,10 +688,6 @@ class TimetableEditor:
 
         row += 1
 
-        # -------------------------------------------------
-        # DEPARTURE TIME
-        # -------------------------------------------------
-
         ttk.Label(
             self.form_frame,
             text="Departure Time:"
@@ -767,10 +728,6 @@ class TimetableEditor:
 
         row += 1
 
-        # -------------------------------------------------
-        # UPDATE DERIVED VALUES
-        # -------------------------------------------------
-
         def update_path_and_locations(*args):
 
             selected_direction = direction_var.get()
@@ -790,10 +747,6 @@ class TimetableEditor:
                 new_path
             )
 
-            # -------------------------------------------------
-            # DOWN
-            # -------------------------------------------------
-
             if selected_direction == "Down":
 
                 from_location = "Chippinhall"
@@ -802,10 +755,6 @@ class TimetableEditor:
                     destination = "Doortown"
                 else:
                     destination = "Goton"
-
-            # -------------------------------------------------
-            # UP
-            # -------------------------------------------------
 
             else:
 
@@ -835,10 +784,6 @@ class TimetableEditor:
         )
 
         update_path_and_locations()
-
-        # -------------------------------------------------
-        # OTHER FIELDS
-        # -------------------------------------------------
 
         for key, value in entry.items():
 
@@ -943,10 +888,6 @@ class TimetableEditor:
             scrollregion=self.canvas.bbox("all")
         )
 
-    # -----------------------------------------------------
-    # SAVE CURRENT ENTRY
-    # -----------------------------------------------------
-
     def save_current(self, silent=False):
 
         if self.current_index is None:
@@ -956,18 +897,10 @@ class TimetableEditor:
             self.current_index
         ]
 
-        # -------------------------------------------------
-        # OLD ID
-        # -------------------------------------------------
-
         old_id = entry.get(
             "id",
             ""
         )
-
-        # -------------------------------------------------
-        # NORMAL EDITABLE FIELDS
-        # -------------------------------------------------
 
         for key, field_data in self.entries.items():
 
@@ -1056,10 +989,6 @@ class TimetableEditor:
 
                 entry[key] = new_values
 
-        # -------------------------------------------------
-        # GET DIRECTION / ROUTE
-        # -------------------------------------------------
-
         direction = self.entries[
             "direction"
         ][1].get()
@@ -1067,10 +996,6 @@ class TimetableEditor:
         route = self.entries[
             "route"
         ][1].get()
-
-        # -------------------------------------------------
-        # BUILD PATH
-        # -------------------------------------------------
 
         if direction == "Down":
 
@@ -1082,10 +1007,6 @@ class TimetableEditor:
                 "Up" +
                 route
             )
-
-        # -------------------------------------------------
-        # DETERMINE LOCATIONS
-        # -------------------------------------------------
 
         if direction == "Down":
 
@@ -1107,18 +1028,11 @@ class TimetableEditor:
             else:
                 entry["from_instrument"] = "Goton"
 
-        # -------------------------------------------------
-        # HARD-CODED GAME VALUES
-        # -------------------------------------------------
-
         entry["progress"] = 0.0
         entry["speed"] = 0.2
         entry["destination_progress"] = "end"
         entry["bell_code"] = [3, 1]
 
-        # -------------------------------------------------
-        # UPDATE ID
-        # -------------------------------------------------
 
         new_id = entry.get(
             "id",
@@ -1144,10 +1058,6 @@ class TimetableEditor:
                 text=f"Entry: {new_id}"
             )
 
-    # -----------------------------------------------------
-    # ADD ENTRY
-    # -----------------------------------------------------
-
     def add_entry(self):
 
         if self.current_index is not None:
@@ -1155,10 +1065,6 @@ class TimetableEditor:
             self.save_current(
                 silent=True
             )
-
-        # -------------------------------------------------
-        # GENERATE UNIQUE ID
-        # -------------------------------------------------
 
         number = 1
 
@@ -1173,10 +1079,6 @@ class TimetableEditor:
                 break
 
             number += 1
-
-        # -------------------------------------------------
-        # CREATE NEW GAME-COMPATIBLE ENTRY
-        # -------------------------------------------------
 
         new_entry = {
             "id": new_id,
@@ -1222,10 +1124,6 @@ class TimetableEditor:
         self.show_entry(
             new_entry
         )
-
-    # -----------------------------------------------------
-    # DELETE ENTRY
-    # -----------------------------------------------------
 
     def delete_entry(self):
 
@@ -1294,10 +1192,6 @@ class TimetableEditor:
 
             self.entries.clear()
 
-    # -----------------------------------------------------
-    # SAVE JSON
-    # -----------------------------------------------------
-
     def save_json(self):
 
         self.save_current(
@@ -1342,21 +1236,10 @@ class TimetableEditor:
                 f"Could not save JSON:\n\n{e}"
             )
 
-    # -----------------------------------------------------
-    # LABEL FORMATTING
-    # -----------------------------------------------------
-
     @staticmethod
     def format_label(key):
-        return key.replace(
-            "_",
-            " "
-        ).title()
+        return key.replace("_"," ").title()
 
-
-# ---------------------------------------------------------
-# START APPLICATION
-# ---------------------------------------------------------
 
 root = tk.Tk()
 
