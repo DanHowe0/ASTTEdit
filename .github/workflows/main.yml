@@ -33,9 +33,6 @@ jobs:
       - name: Build executable
         run: pyinstaller --onefile --name app main.py
 
-      - name: List dist contents (debug)
-        run: ls -la dist/
-
       - name: Rename executable
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
