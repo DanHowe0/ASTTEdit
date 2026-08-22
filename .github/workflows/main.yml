@@ -31,7 +31,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Build executable
-        run: pyinstaller --onefile main.py
+        run: pyinstaller --onefile --name app main.py
 
       - name: List dist contents (debug)
         run: ls -la dist/
