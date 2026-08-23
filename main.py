@@ -56,10 +56,10 @@ class TimetableEditor:
             "Incorrect values may result in an invalid "
             "timetable.\n\n"
 
-            "This is not an official tool, and it may cause"
-            "issues with your game. Please report any issues"
-            "with custom timetables to me, so I can validate"
-            "and identify if the timetable editor is the cause"
+            "This is not an official tool, and it may cause "
+            "issues with your game. Please report any issues "
+            "with custom timetables to me, so I can validate "
+            "and identify if the timetable editor is the cause "
         )
 
         ttk.Label(
