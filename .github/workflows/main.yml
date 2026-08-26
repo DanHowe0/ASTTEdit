@@ -1,0 +1,82 @@
+name: Build and Release Executables
+
+on:
+  workflow_dispatch:
+    inputs:
+      body:
+        description: "Enter the body of the release notes"
+        required: true
+      version:
+        description: "Enter the version (e.g., v1.0.0)"
+        required: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Rename binary
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            mv target/release/asttedit.exe dist/asttedit-windows.exe
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            mkdir -p dist
+            mv target/release/asttedit dist/asttedit-linux
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            mkdir -p dist
+            mv target/release/asttedit dist/asttedit-macos
+          fi
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asttedit-${{ matrix.os }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: List downloaded files (Debugging)
+        run: ls -R
+
+      - name: Make files executable (Linux/Mac)
+        run: chmod +x asttedit-linux asttedit-macos || true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          body: ${{ github.event.inputs.body }}
+          draft: false
+          prerelease: false
+          files: |
+            dist/asttedit-linux
+            dist/asttedit-windows.exe
+            dist/asttedit-macos
