@@ -178,7 +178,7 @@ impl TrainList {
         ));
     }
 
-    if original_id == "NEW" {
+    if original_id == "NEW TRAIN" {
         let train: Train = Train::new(new_data);
         self.trains.push(train);
         self.order("arrival");

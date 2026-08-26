@@ -1,20 +1,15 @@
 use dioxus::prelude::*;
 
-#[component]
-pub fn Topbar(
-    on_new: EventHandler<()>,
-    on_open: EventHandler<()>,
 //    on_save: EventHandler<()>,
-    on_save_as: EventHandler<()>,
-) -> Element {
+
+#[component]
+pub fn Topbar( on_new: EventHandler<()>, on_open: EventHandler<()>, on_save_as: EventHandler<()> ) -> Element {
     let mut file_open = use_signal(|| false);
 
     rsx! {
-        div {
-            class: "topbar",
+        div { class: "topbar",
 
-            div {
-                class: "menu",
+            div { class: "menu",
 
                 button {
                     class: "menu-button",
@@ -27,8 +22,7 @@ pub fn Topbar(
                 }
 
                 if file_open() {
-                    div {
-                        class: "dropdown",
+                    div { class: "dropdown",
 
                         button {
                             class: "dropdown-item",
@@ -62,7 +56,6 @@ pub fn Topbar(
 
                         //    "Save"
                         //}
-
                         button {
                             class: "dropdown-item",
 

@@ -10,10 +10,8 @@ pub fn TrainSelector(
     selected_train: Signal<Option<Train>>,
 ) -> Element {
     rsx! {
-        div {
-            class: "train-selector",
-            div{
-                class: "train-list",
+        div { class: "train-selector",
+            div { class: "train-list",
                 table {
 
                     thead {
@@ -32,24 +30,23 @@ pub fn TrainSelector(
                                 train: train.clone(),
 
                                 selected: selected_train
-                                    .with(|selected| selected.as_ref().map(|t| t.id() == train.id()).unwrap_or(false)),
+                                    .with(|selected| {
+                                        selected.as_ref().map(|t| t.id() == train.id()).unwrap_or(false)
+                                    }),
 
                                 on_select: move |train: Train| {
-                                    selected_train.set(
-                                        Some(train)
-                                    );
-                                }
+                                    selected_train.set(Some(train));
+                                },
                             }
                         }
                     }
                 }
             }
-            div {
-                class: "train-menu",
+            div { class: "train-menu",
                 button {
                     onclick: move |_| {
                         let data = TrainData {
-                            id: "NEW".to_string(),
+                            id: "NEW TRAIN".to_string(),
                             path: "DownMain".to_string(),
                             progress: 0.0,
                             speed: 0.2,
@@ -60,24 +57,22 @@ pub fn TrainSelector(
                             from_instrument: "Chippinhall".to_string(),
                             bell_code: vec![3, 1],
                         };
-
-                        selected_train.set(
-                            Some(Train::new(data))
-                        );
+                        selected_train.set(Some(Train::new(data)));
                     },
 
                     "Add Entry"
                 }
                 button {
                     onclick: move |_| {
-                                            
+
                         let original_train: Train = match selected_train.read().clone() {
                             Some(t) => t,
-                            None => {return}
+                            None => return,
                         };
-
                         let deleted: bool = train_list.write().delete_train(original_train.id());
-                        if deleted {selected_train.set(None)}
+                        if deleted {
+                            selected_train.set(None)
+                        }
                     },
 
                     "Delete Entry"

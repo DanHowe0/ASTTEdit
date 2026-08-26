@@ -1,4 +1,6 @@
+use dioxus::html::g::class;
 use serde::{Deserialize, Serialize};
+// use std::collections::HashMap;
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 pub struct TrainData {
@@ -12,6 +14,46 @@ pub struct TrainData {
     pub destination_progress: String,
     pub from_instrument: String,
     pub bell_code: Vec<i32>,
+}
+
+pub fn get_bell_code(train_class: &str, empty: bool) -> Vec<i32> {
+    match (train_class, empty) {
+        ("0", _) => vec![2, 3],
+        ("1", _) => vec![4],
+        ("2", _) => vec![3, 1],
+
+        ("3", _) => vec![1, 3, 1],
+        ("4", _) => vec![3, 1, 1],
+        ("5", _) => vec![2, 2, 1],
+        ("6", _) => vec![5],
+        ("7", _) => vec![4, 1],
+        ("8", _) => vec![3, 2],
+
+        ("9", false) => vec![1, 4],
+        ("9", true) => vec![1, 4, 1],
+
+        _ => vec![],
+    }
+}
+
+pub fn get_class_from_bell_code(bell_code: &[i32]) -> (&'static str, bool) {
+    match bell_code {
+        [2, 3] => ("0", false),
+        [4] => ("1", false),
+        [3, 1] => ("2", false),
+
+        [1, 3, 1] => ("3", false),
+        [3, 1, 1] => ("4", false),
+        [2, 2, 1] => ("5", false),
+        [5] => ("6", false),
+        [4, 1] => ("7", false),
+        [3, 2] => ("8", false),
+
+        [1, 4] => ("9-passenger", false),
+        [1, 4, 1] => ("9-empty", true),
+
+        _ => ("", false),
+    }
 }
 
 #[derive(Clone, PartialEq)]
@@ -37,9 +79,37 @@ impl Train {
     pub fn id(&self) -> &str {
         &self.data.id
     }
-    pub fn set_id(&mut self, val: String) {
-        self.data.id = val;
-    } 
+
+    pub fn train_class(&self) -> &str {
+        let (t_class, empty): (&str, bool) = get_class_from_bell_code(&self.data.bell_code);
+        return t_class;
+    }
+
+    pub fn bell_code(&self) -> &Vec<i32> {
+        &self.data.bell_code
+    }
+
+    pub fn set_train_class(&mut self, t_class: &str, empty: bool) {
+        self.data.id.replace_range(0..1, t_class);
+        self.data.bell_code = get_bell_code(t_class, empty);
+    }
+
+    pub fn letter(&self) -> &str {
+        &self.data.id[1..2]
+    }
+
+    pub fn set_letter(&mut self, t_class: &str) {
+        self.data.id.replace_range(1..2, t_class);
+    }
+
+    pub fn number(&self) -> &str {
+        &self.data.id[2..4]
+    }
+
+    pub fn set_number(&mut self, t_class: &str) {
+        self.data.id.replace_range(2.., t_class);
+    }
+
 
     pub fn arrival(&self) -> &str {
         &self.data.arrival_time

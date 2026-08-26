@@ -160,6 +160,9 @@
   .visible {
     visibility: visible;
   }
+  .static {
+    position: static;
+  }
   .contents {
     display: contents;
   }
