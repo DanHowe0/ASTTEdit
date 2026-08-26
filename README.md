@@ -1,1 +1,1 @@
-no time to write this now, will do so soon
+# I cba to do this readme
