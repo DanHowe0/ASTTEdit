@@ -1,0 +1,50 @@
+name: Linux build
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to embed, for example 1.2
+        required: true
+        default: "1.2"
+  push:
+    tags:
+      - "V*"
+      - "v*"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      ASTTE_VERSION: ${{ inputs.version || github.ref_name }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            pkg-config
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Dioxus CLI
+        run: cargo install dioxus-cli --locked
+
+      - name: Build Linux release
+        run: dx build --release
+
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ASTTE-${{ env.ASTTE_VERSION }}-linux-x86_64
+          path: target/dx/astte/release/linux/app/astte
