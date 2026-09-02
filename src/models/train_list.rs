@@ -40,6 +40,14 @@ pub struct TrainList {
 }
 
 impl TrainList {
+    pub fn empty(file: PathBuf) -> Self {
+        Self {
+            file,
+            trains: Vec::new(),
+            dirty: false,
+        }
+    }
+
     pub fn new(file: PathBuf) -> Result<Self, String> {
         let data = LoadFile(&file)?;
 

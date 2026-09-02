@@ -13,6 +13,25 @@ use crate::models::{Train, TrainData, TrainList};
 use crate::services::notification::{show_error, show_update_available};
 use crate::services::update_checker::check_for_update;
 
+fn timetable_directory() -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        PathBuf::from(env::var("APPDATA").expect("APPDATA not found"))
+            .join("WhitePawGames")
+            .join("timetables")
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let data_directory = env::var_os("XDG_DATA_HOME")
+            .map(PathBuf::from)
+            .or_else(|| env::var_os("HOME").map(|home| PathBuf::from(home).join(".local/share")))
+            .expect("XDG_DATA_HOME or HOME not found");
+
+        data_directory.join("WhitePawGames").join("timetables")
+    }
+}
+
 fn main() {
     LaunchBuilder::desktop()
         .with_cfg(
@@ -37,28 +56,30 @@ fn App() -> Element {
         });
     });
 
-    let appdata: String = env::var("APPDATA").expect("APPDATA not found");
-    let fileName: String = "timetable_triang.json".to_string();
-    let filePath: PathBuf = PathBuf::from(format!(r"{}\WhitePawGames\timetables\", appdata));
-    let file: PathBuf = filePath.clone().join(fileName);
+    let file_path = timetable_directory();
+    let file = file_path.clone().join("timetable_triang.json");
     
-    let load_trains: TrainList = match TrainList::new(file.clone()) {
-        Ok(list) => list,
-        Err(error) => {
-            println!("Failed to load timetable: {}\n{}", error, file.display());
-            return rsx! {
-                p {
-                    "Failed to load timetable: {error}"
+    let load_trains: TrainList = if file.exists() {
+        match TrainList::new(file.clone()) {
+            Ok(list) => list,
+            Err(error) => {
+                println!("Failed to load timetable: {}\n{}", error, file.display());
+                return rsx! {
+                    p {
+                        "Failed to load timetable: {error}"
+                    }
                 }
             }
         }
+    } else {
+        TrainList::empty(file.clone())
     };
 
     let mut train_list: Signal<TrainList> = use_signal(|| load_trains);
     let mut selected_train: Signal<Option<Train>> = use_signal(|| None::<Train>);
 
-    let load = filePath.clone();
-    let save = filePath.clone();
+    let load = file_path.clone();
+    let save = file_path.clone();
 
     const DISABLE_CONTEXT_MENU: &str = r#"
         document.addEventListener('contextmenu', function(event) {
