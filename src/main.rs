@@ -10,7 +10,8 @@ mod components;
 
 use components::{TrainEditor, TrainSelector, Topbar};
 use crate::models::{Train, TrainData, TrainList};
-use crate::services::notification::show_error;
+use crate::services::notification::{show_error, show_update_available};
+use crate::services::update_checker::check_for_update;
 
 fn main() {
     LaunchBuilder::desktop()
@@ -28,6 +29,14 @@ fn main() {
 
 #[component]
 fn App() -> Element {
+    use_effect(|| {
+        spawn(async {
+            if let Some((version, url)) = check_for_update().await {
+                show_update_available(&version, &url);
+            }
+        });
+    });
+
     let appdata: String = env::var("APPDATA").expect("APPDATA not found");
     let fileName: String = "timetable_triang.json".to_string();
     let filePath: PathBuf = PathBuf::from(format!(r"{}\WhitePawGames\timetables\", appdata));
