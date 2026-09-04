@@ -59,7 +59,8 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin AppDir/usr/share/icons/hicolor/256x256/apps
           cp target/dx/astte/release/linux/app/astte AppDir/usr/bin/astte
-          convert assets/favicon.ico -resize 256x256 AppDir/usr/share/icons/hicolor/256x256/apps/astte.png
+          magick 'assets/favicon.ico[0]' -resize 256x256 AppDir/usr/share/icons/hicolor/256x256/apps/astte.png
+          test -s AppDir/usr/share/icons/hicolor/256x256/apps/astte.png
           cat > AppDir/astte.desktop <<'EOF'
           [Desktop Entry]
           Type=Application
