@@ -82,6 +82,7 @@ jobs:
           ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run \
             --appdir AppDir \
             --library /usr/lib/libxdo.so.4 \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/astte.png \
             --desktop-file AppDir/astte.desktop \
             --output appimage
           mv ASTTE-x86_64.AppImage "ASTTE-${ASTTE_VERSION}-linux-x86_64.AppImage"
