@@ -33,6 +33,7 @@ jobs:
             curl \
             git \
             gtk3 \
+            imagemagick \
             libayatana-appindicator \
             librsvg \
             pkgconf \
@@ -58,11 +59,13 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           cp target/dx/astte/release/linux/app/astte AppDir/usr/bin/astte
+          convert assets/favicon.ico -resize 256x256 AppDir/astte.png
           cat > AppDir/astte.desktop <<'EOF'
           [Desktop Entry]
           Type=Application
           Name=ASTTE
           Exec=astte
+          Icon=astte
           Categories=Utility;
           Terminal=false
           EOF
@@ -78,6 +81,7 @@ jobs:
         run: |
           ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run \
             --appdir AppDir \
+            --library /usr/lib/libxdo.so.4 \
             --desktop-file AppDir/astte.desktop \
             --output appimage
           mv ASTTE-x86_64.AppImage "ASTTE-${ASTTE_VERSION}-linux-x86_64.AppImage"
