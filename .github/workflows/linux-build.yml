@@ -15,6 +15,7 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-24.04
+    container: archlinux:latest
     permissions:
       contents: read
     env:
@@ -26,17 +27,21 @@ jobs:
 
       - name: Install Linux desktop dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgtk-3-dev \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libxdo-dev \
-            pkg-config
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm --needed \
+            base-devel \
+            curl \
+            git \
+            gtk3 \
+            libayatana-appindicator \
+            librsvg \
+            pkgconf \
+            rustup \
+            webkit2gtk-4.1 \
+            xdotool
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        run: rustup default stable
 
       - name: Install Dioxus CLI
         run: cargo install dioxus-cli --locked
@@ -44,8 +49,39 @@ jobs:
       - name: Build Linux release
         run: dx build --release
 
-      - name: Upload Linux artifact
+      - name: Verify libxdo ABI
+        run: readelf -d target/dx/astte/release/linux/app/astte | grep -q 'libxdo.so.4'
+
+      - name: Create AppImage metadata
+        run: |
+          mkdir -p AppDir/usr/bin
+          cp target/dx/astte/release/linux/app/astte AppDir/usr/bin/astte
+          cat > AppDir/astte.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=ASTTE
+          Exec=astte
+          Categories=Utility;
+          Terminal=false
+          EOF
+
+      - name: Install linuxdeploy
+        run: |
+          curl -L \
+            -o linuxdeploy-x86_64.AppImage \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+
+      - name: Build AppImage
+        run: |
+          ./linuxdeploy-x86_64.AppImage --appimage-extract-and-run \
+            --appdir AppDir \
+            --desktop-file AppDir/astte.desktop \
+            --output appimage
+          mv ASTTE-x86_64.AppImage "ASTTE-${ASTTE_VERSION}-linux-x86_64.AppImage"
+
+      - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
           name: ASTTE-${{ env.ASTTE_VERSION }}-linux-x86_64
-          path: target/dx/astte/release/linux/app/astte
+          path: ASTTE-${{ env.ASTTE_VERSION }}-linux-x86_64.AppImage
