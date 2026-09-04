@@ -41,7 +41,9 @@ jobs:
             xdotool
 
       - name: Install Rust
-        run: rustup default stable
+        run: |
+          rustup default stable
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Install Dioxus CLI
         run: cargo install dioxus-cli --locked
