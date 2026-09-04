@@ -87,6 +87,8 @@ jobs:
             --desktop-file AppDir/astte.desktop \
             --output appimage
           mv ASTTE-x86_64.AppImage "ASTTE-${ASTTE_VERSION}-linux-x86_64.AppImage"
+          chmod +x "ASTTE-${ASTTE_VERSION}-linux-x86_64.AppImage"
+          test -x "ASTTE-${ASTTE_VERSION}-linux-x86_64.AppImage"
 
       - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
